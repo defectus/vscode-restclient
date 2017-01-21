@@ -7,6 +7,7 @@ import { HistoryController } from './controllers/historyController';
 import { ResponseController } from './controllers/responseController';
 import { CodeSnippetController } from './controllers/codeSnippetController';
 import { HttpCompletionItemProvider } from './httpCompletionItemProvider';
+import { ProfileController } from './controllers/profileController'
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -16,7 +17,8 @@ export function activate(context: ExtensionContext) {
     // This line of code will only be executed once when your extension is activated
     console.log('Congratulations, your extension "rest-client" is now active!');
 
-    let requestController = new RequestController();
+    let profileController = new ProfileController();
+    let requestController = new RequestController(profileController);
     let historyController = new HistoryController();
     let codeSnippetController = new CodeSnippetController();
     context.subscriptions.push(requestController);
@@ -25,12 +27,14 @@ export function activate(context: ExtensionContext) {
     context.subscriptions.push(commands.registerCommand('rest-client.request', () => requestController.run()));
     context.subscriptions.push(commands.registerCommand('rest-client.rerun-last-request', () => requestController.rerun()));
     context.subscriptions.push(commands.registerCommand('rest-client.cancel-request', () => requestController.cancel()));
+    context.subscriptions.push(commands.registerCommand('rest-client.change-profile', () => profileController.changeProfile()));
     context.subscriptions.push(commands.registerCommand('rest-client.history', () => historyController.save()));
     context.subscriptions.push(commands.registerCommand('rest-client.clear-history', () => historyController.clear()));
     context.subscriptions.push(commands.registerCommand('rest-client.save-response', ResponseController.save));
     context.subscriptions.push(commands.registerCommand('rest-client.generate-codesnippet', () => codeSnippetController.run()));
     context.subscriptions.push(commands.registerCommand('rest-client.copy-codesnippet', () => codeSnippetController.copy()));
     context.subscriptions.push(languages.registerCompletionItemProvider('http', new HttpCompletionItemProvider()));
+    profileController.profileFolderLocation = requestController.settings.profileFolderLocation
 }
 
 // this method is called when your extension is deactivated

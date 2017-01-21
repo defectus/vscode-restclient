@@ -19,3 +19,4 @@ export const RandomInt = "$randomInt";
 export const RandomIntDescription = "Returns a random integer between min (included) and max (excluded)";
 
 export const CommentIdentifiersRegex: RegExp = new RegExp('^\\s*(\#|\/\/)');
+export const DefaultProfileName: string = "Global"

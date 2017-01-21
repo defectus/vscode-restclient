@@ -25,6 +25,7 @@ export class CodeSnippetController {
     private _registration: Disposable;
     private _selectedText;
     private _convertedResult;
+    private _variableProcessor: VariableProcessor;
 
     constructor() {
         this._codeSnippetTextProvider = new CodeSnippetTextDocumentContentProvider(null, null);
@@ -51,7 +52,7 @@ export class CodeSnippetController {
         }
 
         // variables replacement
-        selectedText = VariableProcessor.processRawRequest(selectedText);
+        selectedText = await this._variableProcessor.processRawRequest(selectedText);
         this._selectedText = selectedText;
 
         // parse http request

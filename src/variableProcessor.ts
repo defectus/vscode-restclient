@@ -2,24 +2,32 @@
 
 import * as Constants from './constants';
 import { Func } from './common/delegates';
+import * as fs from 'async-file';
+import { ProfileController } from './controllers/profileController'
+
 var uuid = require('node-uuid');
 var moment = require('moment');
 
 export class VariableProcessor {
-    static processRawRequest(request: string) {
-        let globalVariables = VariableProcessor.getGlobalVariables();
+
+    private profileController: ProfileController;
+    constructor(profileController: ProfileController) {
+        this.profileController = profileController;
+    }
+
+    async processRawRequest(request: string): Promise<string> {
+        let globalVariables = await this.getGlobalVariables();
         for (var variablePattern in globalVariables) {
             let regex = new RegExp(`\\{\\{${variablePattern}\\}\\}`, 'g');
             if (regex.test(request)) {
                 request = request.replace(regex, globalVariables[variablePattern]);
             }
         }
-
         return request;
     }
 
-    private static getGlobalVariables(): { [key: string]: Func<string, string> } {
-        return {
+    private async getGlobalVariables(): Promise<{ [key: string]: Func<string, string> }> {
+        let globalVars = {
             [`\\${Constants.TimeStampVariableName}(?:\\s(\\-?\\d+)\\s(y|Q|M|w|d|h|m|s|ms))?`]: match => {
                 let regex = new RegExp(`\\${Constants.TimeStampVariableName}(?:\\s(\\-?\\d+)\\s(y|Q|M|w|d|h|m|s|ms))?`);
                 let groups = regex.exec(match);
@@ -45,6 +53,8 @@ export class VariableProcessor {
                 }
                 return match;
             }
-        }
+        };
+        let profileVars = await this.profileController.loadProfileData();
+        return Object.assign({}, globalVars, profileVars);
     }
 }

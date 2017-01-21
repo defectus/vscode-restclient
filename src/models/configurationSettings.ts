@@ -13,6 +13,7 @@ export interface IRestClientSettings {
     fontSize?: number;
     fontFamily: string;
     fontWeight: string;
+    profileFolderLocation: string;
 }
 
 export class RestClientSettings implements IRestClientSettings {
@@ -28,6 +29,7 @@ export class RestClientSettings implements IRestClientSettings {
     fontSize?: number;
     fontFamily: string;
     fontWeight: string;
+    profileFolderLocation: string;
 
     constructor() {
         workspace.onDidChangeConfiguration(() => {
@@ -40,6 +42,7 @@ export class RestClientSettings implements IRestClientSettings {
     private initializeSettings() {
         var restClientSettings = workspace.getConfiguration("rest-client");
         this.followRedirect = restClientSettings.get<boolean>("followredirect", true);
+        this.profileFolderLocation = restClientSettings.get<string>("profileFolderLocation", "/Users/defectus");
         this.defaultUserAgent = restClientSettings.get<string>("defaultuseragent", "vscode-restclient");
         this.showResponseInDifferentTab = restClientSettings.get<boolean>("showResponseInDifferentTab", false);
         this.rememberCookiesForSubsequentRequests = restClientSettings.get<boolean>("rememberCookiesForSubsequentRequests", true);

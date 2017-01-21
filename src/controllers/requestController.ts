@@ -10,6 +10,7 @@ import { PersistUtility } from '../persistUtility';
 import { HttpResponseTextDocumentContentProvider } from '../views/httpResponseTextDocumentContentProvider';
 import { Telemetry } from '../telemetry';
 import { VariableProcessor } from '../variableProcessor';
+import { ProfileController } from './profileController';
 import { RequestStore } from '../requestStore';
 import { ResponseStore } from '../responseStore';
 import { Selector } from '../selector';
@@ -32,8 +33,10 @@ export class RequestController {
     private _registration: Disposable;
     private _previewUri: Uri = Uri.parse('rest-response://authority/response-preview');
     private _interval: NodeJS.Timer;
+    private _variableProcessor: VariableProcessor;
+    private _profileController: ProfileController;
 
-    constructor() {
+    constructor(profileController: ProfileController) {
         this._durationStatusBarItem = window.createStatusBarItem(StatusBarAlignment.Left);
         this._sizeStatusBarItem = window.createStatusBarItem(StatusBarAlignment.Left);
         this._restClientSettings = new RestClientSettings();
@@ -41,6 +44,11 @@ export class RequestController {
 
         this._responseTextProvider = new HttpResponseTextDocumentContentProvider(null, this._restClientSettings);
         this._registration = workspace.registerTextDocumentContentProvider('rest-response', this._responseTextProvider);
+        this._variableProcessor = new VariableProcessor(profileController);
+    }
+
+    get settings(): RestClientSettings {
+        return this._restClientSettings;
     }
 
     async run() {
@@ -64,7 +72,7 @@ export class RequestController {
         }
 
         // variables replacement
-        selectedText = VariableProcessor.processRawRequest(selectedText);
+        selectedText = await this._variableProcessor.processRawRequest(selectedText);
 
         // parse http request
         let httpRequest = new RequestParserFactory().createRequestParser(selectedText).parseHttpRequest(selectedText, editor.document.fileName);
